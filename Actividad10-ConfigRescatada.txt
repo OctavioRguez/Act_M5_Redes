@@ -1,0 +1,142 @@
+--------- MyISP --------
+Ya configurado
+
+-------- RF --------
+enable
+configure terminal
+
+hostname RFrontera
+
+service password-encryption
+no ip domain-lookup
+
+line con 0
+password cisco
+login
+logging synchronous
+
+line vty 0 4
+password cisco
+login
+logging synchronous
+
+enable secret class
+
+banner motd #Prohibido entrar a este
+router sin autorización !!!#
+
+interface S0/0/0
+ip address 134.89.254.242 255.255.255.252
+description Conexion con MyISP
+no shutdown
+
+interface S0/0/1
+ip address 198.68.1.249 255.255.255.252
+description Conexion con RA
+clock rate 1280
+no shutdown
+
+interface g0/0
+ip address 210.100.155.126 255.255.255.224
+description Esta es la interface G0/0
+no shutdown
+
+interface g0/1
+ip address 210.10.10.94 255.255.255.224
+description Esta es la interface G0/1
+no shutdown
+
+ip route 0.0.0.0 0.0.0.0 S0/0/0
+
+router eigrp 200
+network 210.10.10.64 0.0.0.31
+network 210.100.155.96 0.0.0.31
+network 198.68.1.0
+no passive-interface S0/0/0
+no passive-interface S0/0/1
+no passive-interface G0/0
+no passive-interface G0/1
+no auto-summary
+
+-------- RA ----------
+enable
+configure terminal
+
+hostname RA
+
+service password-encryption
+no ip domain-lookup
+
+line con 0
+password cisco
+login
+logging synchronous
+
+line vty 0 4
+password cisco
+login
+logging synchronous
+
+enable secret class
+
+banner motd #Prohibido entrar a este
+router sin autorización !!!#
+
+interface S0/0/0
+description Conexion con el RFrontera 
+ip address 198.68.1.250 255.255.255.252
+no shutdown
+
+interface g0/0
+description Esta es la interface G0/0
+ip address 210.100.130.126 255.255.255.128
+no shutdown
+
+interface g0/1
+description Esta es la interface G0/1
+ip address 210.100.130.190 255.255.255.192
+no shutdown
+
+ip route 0.0.0.0 0.0.0.0 S0/0/0
+
+router eigrp 200
+network 210.100.130.0 0.0.0.255
+network 198.68.1.0
+passive-interface default
+no passive-interface G0/0
+no passive-interface G0/1
+no auto-summary
+
+---- switch3 : Zona de servers -----
+enable
+configure terminal
+
+hostname S3res
+no ip domain-lookup
+
+enable secret class
+
+line con 0
+password cisco
+login
+logging synchronous
+
+line vty 0 15
+password cisco
+login
+logging synchronous
+
+service password-encryption
+
+banner motd #Prohibido entrar a este
+switch sin autorización !!!#
+
+vlan 20
+name Servers
+
+interface vlan 100
+ip address 210.10.10.93 255.255.255.224
+description Esta es la interface vlan100
+no shutdown
+
+ip default-gateway  210.10.10.94
