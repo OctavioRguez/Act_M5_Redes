@@ -5,25 +5,28 @@ Ya configurado
 enable
 configure terminal
 
-hostname RFrontera
+hostname RF
 
+username cisco secret cisco
 service password-encryption
 no ip domain-lookup
 
 line con 0
 password cisco
-login
+login local
 logging synchronous
+exec-timeout 5
 
 line vty 0 4
 password cisco
-login
+login local
 logging synchronous
+exec-timeout 5
 
 enable secret class
 
 banner motd #Prohibido entrar a este
-router sin autorización !!!#
+router sin autorizacion !!!#
 
 interface S0/0/0
 ip address 134.89.254.242 255.255.255.252
@@ -33,30 +36,32 @@ no shutdown
 interface S0/0/1
 ip address 198.68.1.249 255.255.255.252
 description Conexion con RA
-clock rate 1280
 no shutdown
 
 interface g0/0
 ip address 210.100.155.126 255.255.255.224
-description Esta es la interface G0/0
+description Segmento Usuarios
 no shutdown
 
 interface g0/1
 ip address 210.10.10.94 255.255.255.224
-description Esta es la interface G0/1
+description Servers
 no shutdown
 
 ip route 0.0.0.0 0.0.0.0 S0/0/0
 
-router eigrp 200
+router eigrp 2000
 network 210.10.10.64 0.0.0.31
 network 210.100.155.96 0.0.0.31
 network 198.68.1.0
-no passive-interface S0/0/0
+passive-interface default
 no passive-interface S0/0/1
-no passive-interface G0/0
-no passive-interface G0/1
 no auto-summary
+
+ip dhcp pool LAN-USUARIOS
+network 210.100.155.96 255.255.255.224
+default-router 210.100.155.126
+dns-server 8.8.8.8
 
 -------- RA ----------
 enable
@@ -64,26 +69,29 @@ configure terminal
 
 hostname RA
 
+username cisco secret cisco
 service password-encryption
 no ip domain-lookup
 
 line con 0
 password cisco
-login
+login local
 logging synchronous
+exec-timeout 5
 
 line vty 0 4
 password cisco
-login
+login local
 logging synchronous
+exec-timeout 5
 
 enable secret class
 
 banner motd #Prohibido entrar a este
-router sin autorización !!!#
+router sin autorizacion !!!#
 
 interface S0/0/0
-description Conexion con el RFrontera 
+description Conexion con el RF
 ip address 198.68.1.250 255.255.255.252
 no shutdown
 
@@ -99,44 +107,61 @@ no shutdown
 
 ip route 0.0.0.0 0.0.0.0 S0/0/0
 
-router eigrp 200
-network 210.100.130.0 0.0.0.255
+router eigrp 2000
+network 210.100.130.0 0.0.0.127
+network 210.100.130.128 0.0.0.63
 network 198.68.1.0
 passive-interface default
-no passive-interface G0/0
-no passive-interface G0/1
+no passive-interface S0/0/0
 no auto-summary
+
+ip dhcp pool LAN1
+network 210.100.130.0 255.255.255.128
+default-router 210.100.130.126
+dns-server 8.8.8.8
+
+ip dhcp pool LAN2
+network 210.100.130.128 255.255.255.192
+default-router 210.100.130.190
+dns-server 8.8.8.8
 
 ---- switch3 : Zona de servers -----
 enable
 configure terminal
 
-hostname S3res
-no ip domain-lookup
+hostname Servers
 
+username cisco secret cisco
+no ip domain-lookup
 enable secret class
 
 line con 0
 password cisco
-login
+login local
 logging synchronous
+exec-timeout 5
 
 line vty 0 15
 password cisco
-login
+login local
 logging synchronous
+exec-timeout 5
 
 service password-encryption
 
 banner motd #Prohibido entrar a este
-switch sin autorización !!!#
+switch sin autorizacion !!!#
+
+interface Vlan1
+no ip address
+shutdown
+no ip default-gateway
 
 vlan 20
 name Servers
 
 interface vlan 100
 ip address 210.10.10.93 255.255.255.224
-description Esta es la interface vlan100
+description Admin
 no shutdown
-
 ip default-gateway  210.10.10.94
